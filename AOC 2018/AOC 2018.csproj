@@ -49,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="ReadMe.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Inputs\day_01_part_1__input.txt" />
