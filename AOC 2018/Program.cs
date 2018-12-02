@@ -11,6 +11,7 @@ namespace AOC_2018 {
 			//System.Console.WriteLine("Day 1 - Part 2 - Period Frequency : {0:N0}", Day_01.Find_Period_Frequecy());
 
 			System.Console.WriteLine("Checksum= {0:N0}", Day_02.GetChecksum());
+			System.Console.WriteLine("Common letters for the two correct Box Ids= {0:N0}", Day_02.GetCommonLettersForCorrectBoxId());
 		}
 	}
 }
