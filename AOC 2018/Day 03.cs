@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace AOC_2018 {
@@ -38,6 +40,13 @@ namespace AOC_2018 {
 				.Where(l => !string.IsNullOrWhiteSpace(l))
 				.Select(l => Claim.Parse(l))
 				.ToList();
+
+			////Test Data:
+			//Input = new List<Claim> {
+			//	Claim.Parse("#1 @ 1,3: 4x4"),
+			//	Claim.Parse("#2 @ 3,1: 4x4"),
+			//	Claim.Parse("#3 @ 5,5: 2x2")
+			//};
 		}
 
 		public static int CalculateOverlappingArea() {
@@ -56,6 +65,74 @@ namespace AOC_2018 {
 			TimeSpan tsExecTime = DateTime.Now - dtStart;
 			Console.WriteLine("It took {0} to execute.", tsExecTime);
 			return result;
+		}
+
+		public static int[] getRGBArray(this Bitmap image) {
+			if (image == null) { throw new ArgumentNullException("image"); }
+			int[] result = new int[image.Width * image.Height];
+			BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+			try {
+				byte[] ba = new byte[data.Stride];
+				for (int line = 0; line < data.Height; line++) {
+					Marshal.Copy(data.Scan0 + (line * data.Stride), ba, 0, data.Stride);
+					for (int pixeloffset = 0; pixeloffset < data.Width; pixeloffset++) {
+						result[line * image.Width + pixeloffset] =
+							(ba[pixeloffset * 4 + 3] << 24) +   // A
+							(ba[pixeloffset * 4 + 2] << 16) +   // R
+							(ba[pixeloffset * 4 + 1] << 8) +    // G
+							ba[pixeloffset * 4];                // B
+					}
+				}
+			} finally {
+				image.UnlockBits(data);
+			}
+			return result;
+		}
+
+		public static int CalculateOverlappingArea_Graphical() {
+			const int FabricWidth = 1000;
+			Color
+				bg = Color.FromArgb(0, 0, 0, 0),
+				signature = Color.FromArgb(0x77fe0000);
+			DateTime dtStart = DateTime.Now;
+			int result = 0;
+			using (Bitmap img = new Bitmap(FabricWidth, FabricWidth)) {
+				using (Graphics g = Graphics.FromImage(img)) {
+					g.Clear(bg);
+					g.FillRectangles(new SolidBrush(signature), Input.Select(c => c.Rectangle).ToArray());
+					g.Flush();
+				}
+
+				//img.Save(@"C:\Workspace\VS\Advent of Code\AOC 2018\Inputs\day_03.png", ImageFormat.Png);
+
+				////This will take almost 4 times more than what the straight way takes.
+				//for (int i = 0; i < img.Width; i++) {
+				//	for (int j = 0; j < img.Height; j++) {
+				//		Color c = img.GetPixel(i, j);
+				//		if (c.A > 0x77) { result += 1; }
+				//	}
+				//}
+
+				// This one takes nearly 25% less!
+				// I like this one!
+				int[] pixels = img.getRGBArray();
+				result = pixels.Where(p => p != 0x77fe0000).Where(p => p != 0x00).Count();
+			}
+
+			TimeSpan tsExecTime = DateTime.Now - dtStart;
+			Console.WriteLine("It took {0} to execute Graphically.", tsExecTime);
+			return result;
+		}
+
+		public static int FindNonOverlappingClaimId() {
+			return Input
+				.Where(c =>
+					!Input
+						.Except(new Claim[] { c })
+						.Any(c1 => c1.Rectangle.IntersectsWith(c.Rectangle))
+				)
+				.Single()
+				.Id;
 		}
 	}
 }
