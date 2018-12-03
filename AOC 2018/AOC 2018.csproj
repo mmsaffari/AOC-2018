@@ -58,6 +58,7 @@
     <Content Include="Inputs\day_01__problem.txt" />
     <Content Include="Inputs\day_02_part_1__input.txt" />
     <Content Include="Inputs\day_02__problem.txt" />
+    <Content Include="Inputs\day_03.png" />
     <Content Include="Inputs\day_03_part_1__input.txt" />
     <Content Include="Inputs\day_03__problem.txt" />
   </ItemGroup>
